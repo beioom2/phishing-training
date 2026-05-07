@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ログイン | 訓練管理システム</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body class="login-body">
+  <div class="login-box">
+    <h1>🎯 訓練管理システム</h1>
+    <p class="login-sub">標的型攻撃メール訓練</p>
+    <% if (error) { %>
+      <p class="alert-error"><%= error %></p>
+    <% } %>
+    <form method="post" action="/admin/login">
+      <div class="form-row">
+        <label>ユーザー名</label>
+        <input type="text" name="username" required autofocus>
+      </div>
+      <div class="form-row">
+        <label>パスワード</label>
+        <input type="password" name="password" required>
+      </div>
+      <button type="submit" class="btn-primary full">ログイン</button>
+    </form>
+  </div>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= campaign.name %> | 訓練管理システム</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <%- include('../partials/header') %>
+  <main class="container">
+    <div class="page-header">
+      <h2><%= campaign.name %></h2>
+      <a href="/admin" class="btn-sm">← 戻る</a>
+    </div>
+
+    <!-- 集計カード -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <p class="stat-label">対象者数</p>
+        <p class="stat-num"><%= recipients.length %></p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-label">送信済み</p>
+        <p class="stat-num"><%= sentCount %></p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-label">クリック数</p>
+        <p class="stat-num text-danger"><%= clickCount %></p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-label">クリック率</p>
+        <p class="stat-num <%= clickRate >= 30 ? 'text-danger' : 'text-ok' %>"><%= clickRate %>%</p>
+      </div>
+    </div>
+
+    <!-- 部署別集計 -->
+    <% if (Object.keys(deptStats).length > 0) { %>
+    <div class="section-block">
+      <h3>部署別クリック状況</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>部署</th><th>対象人数</th><th>クリック数</th><th>クリック率</th></tr></thead>
+          <tbody>
+            <% Object.entries(deptStats).forEach(([dept, s]) => { %>
+            <tr>
+              <td><%= dept %></td>
+              <td><%= s.total %></td>
+              <td><%= s.clicked %></td>
+              <td class="<%= Math.round(s.clicked/s.total*100) >= 30 ? 'text-danger' : 'text-ok' %>">
+                <%= Math.round(s.clicked/s.total*100) %>%
+              </td>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <% } %>
+
+    <!-- 受信者登録 -->
+    <div class="section-block">
+      <h3>受信者登録（CSV貼り付け）</h3>
+      <p class="text-muted">書式：氏名,メールアドレス,部署名（1行1名）</p>
+      <form method="post" action="/admin/campaigns/<%= campaign.id %>/recipients">
+        <textarea name="csvText" rows="6" placeholder="田中 太郎,tanaka@example.com,営業部&#10;鈴木 花子,suzuki@example.com,総務部"></textarea>
+        <button type="submit" class="btn-primary" style="margin-top:0.6rem">登録する</button>
+      </form>
+    </div>
+
+    <!-- 受信者一覧 -->
+    <div class="section-block">
+      <div class="section-block-header">
+        <h3>受信者一覧（<%= recipients.length %>名）</h3>
+        <% if (recipients.filter(r => !r.sentAt).length > 0 && campaign.status !== 'sent') { %>
+        <form method="post" action="/admin/campaigns/<%= campaign.id %>/send" onsubmit="return confirm('<%= recipients.filter(r=>!r.sentAt).length %>名にメールを送信します。よろしいですか？')">
+          <button type="submit" class="btn-danger">📧 訓練メール送信（<%= recipients.filter(r=>!r.sentAt).length %>名）</button>
+        </form>
+        <% } %>
+      </div>
+
+      <% if (recipients.length === 0) { %>
+        <p class="text-muted">受信者が登録されていません。上のフォームから登録してください。</p>
+      <% } else { %>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>氏名</th>
+              <th>メール</th>
+              <th>部署</th>
+              <th>送信日時</th>
+              <th>クリック日時</th>
+              <th>結果</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% recipients.forEach(r => { %>
+            <tr>
+              <td><%= r.name %></td>
+              <td><%= r.email %></td>
+              <td><%= r.department || '—' %></td>
+              <td><%= r.sentAt ? new Date(r.sentAt).toLocaleString('ja-JP') : '—' %></td>
+              <td><%= r.clickedAt ? new Date(r.clickedAt).toLocaleString('ja-JP') : '—' %></td>
+              <td>
+                <% if (!r.sentAt) { %>
+                  <span class="badge badge-draft">未送信</span>
+                <% } else if (r.clickedAt) { %>
+                  <span class="badge badge-danger">クリックあり</span>
+                <% } else { %>
+                  <span class="badge badge-ok">クリックなし</span>
+                <% } %>
+              </td>
+              <td>
+                <% if (!r.sentAt) { %>
+                <form method="post" action="/admin/campaigns/<%= campaign.id %>/recipients/<%= r.id %>/delete" onsubmit="return confirm('削除しますか？')">
+                  <button type="submit" class="btn-sm btn-danger-sm">削除</button>
+                </form>
+                <% } %>
+              </td>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+      <% } %>
+    </div>
+  </main>
+</body>
+</html>

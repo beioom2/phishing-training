@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ダッシュボード | 訓練管理システム</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <%- include('../partials/header') %>
+  <main class="container">
+    <div class="page-header">
+      <h2>キャンペーン一覧</h2>
+      <a href="/admin/campaigns/new" class="btn-primary">＋ 新規キャンペーン</a>
+    </div>
+
+    <% if (campaigns.length === 0) { %>
+      <div class="empty-state">
+        <p>キャンペーンがありません。まず「新規キャンペーン」を作成してください。</p>
+      </div>
+    <% } else { %>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>キャンペーン名</th>
+              <th>ステータス</th>
+              <th>対象者数</th>
+              <th>送信済み</th>
+              <th>クリック数</th>
+              <th>クリック率</th>
+              <th>作成日</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% campaigns.forEach(c => { %>
+            <tr>
+              <td><strong><%= c.name %></strong></td>
+              <td><span class="badge badge-<%= c.status %>"><%= c.status === 'draft' ? '下書き' : c.status === 'sent' ? '送信済み' : '完了' %></span></td>
+              <td><%= c.totalCount %></td>
+              <td><%= c.sentCount %></td>
+              <td><%= c.clickCount %></td>
+              <td>
+                <% if (c.sentCount > 0) { %>
+                  <span class="<%= Math.round(c.clickCount/c.sentCount*100) >= 30 ? 'text-danger' : 'text-ok' %>">
+                    <%= Math.round(c.clickCount/c.sentCount*100) %>%
+                  </span>
+                <% } else { %>—<% } %>
+              </td>
+              <td><%= new Date(c.createdAt).toLocaleDateString('ja-JP') %></td>
+              <td><a href="/admin/campaigns/<%= c.id %>" class="btn-sm">詳細</a></td>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </main>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>キャンペーン作成 | 訓練管理システム</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <%- include('../partials/header') %>
+  <main class="container">
+    <div class="page-header">
+      <h2>新規キャンペーン作成</h2>
+      <a href="/admin" class="btn-sm">← 戻る</a>
+    </div>
+
+    <% if (error) { %><p class="alert-error"><%= error %></p><% } %>
+
+    <form method="post" action="/admin/campaigns" class="form-card">
+      <h3>基本情報</h3>
+      <div class="form-row">
+        <label>キャンペーン名 <span class="required">必須</span></label>
+        <input type="text" name="name" placeholder="例：2026年5月 標的型メール訓練" required>
+      </div>
+
+      <h3>送信メール設定</h3>
+      <div class="form-row">
+        <label>送信者名 <span class="required">必須</span></label>
+        <input type="text" name="senderName" placeholder="例：システム管理部" required>
+      </div>
+      <div class="form-row">
+        <label>送信者メールアドレス <span class="required">必須</span></label>
+        <input type="email" name="senderEmail" placeholder="例：noreply@example-corp.com" required>
+      </div>
+      <div class="form-row">
+        <label>件名 <span class="required">必須</span></label>
+        <select name="emailSubject" id="subjectSelect" onchange="applyTemplate(this.value)">
+          <option value="">-- テンプレートを選択または手入力 --</option>
+          <option value="【重要】パスワード変更のお願い">【重要】パスワード変更のお願い</option>
+          <option value="【緊急】アカウントのセキュリティ確認">【緊急】アカウントのセキュリティ確認</option>
+          <option value="お荷物のお届けについてご確認ください">お荷物のお届けについてご確認ください</option>
+        </select>
+        <input type="text" name="emailSubject" id="subjectInput" placeholder="件名を入力" required style="margin-top:0.4rem">
+      </div>
+      <div class="form-row">
+        <label>本文（HTML可）<br><small class="text-muted">{{tracking_url}} がトラッキングリンクに置換されます</small></label>
+        <textarea name="emailBody" id="emailBody" rows="10" required
+          placeholder="例：&#10;お世話になっております。システム管理部です。&#10;セキュリティ強化のため、下記リンクよりパスワードの変更をお願いします。&#10;&#10;&lt;a href=&quot;{{tracking_url}}&quot;&gt;パスワード変更はこちら&lt;/a&gt;"></textarea>
+      </div>
+
+      <h3>ランディングページ設定</h3>
+      <div class="form-row">
+        <label>偽ページのタイトル</label>
+        <input type="text" name="landingTitle" placeholder="例：パスワード変更" value="セキュリティ確認">
+      </div>
+
+      <div class="form-submit">
+        <button type="submit" class="btn-primary">作成する</button>
+      </div>
+    </form>
+  </main>
+
+  <script>
+    const templates = {
+      '【重要】パスワード変更のお願い': `お世話になっております。システム管理部です。<br><br>セキュリティポリシーの改定に伴い、<strong>本日中</strong>にパスワードの変更をお願いいたします。<br><br>下記リンクよりパスワード変更画面にアクセスしてください。<br><br><a href="{{tracking_url}}">▶ パスワード変更はこちら</a><br><br>ご不明な点はシステム管理部までお問い合わせください。`,
+      '【緊急】アカウントのセキュリティ確認': `お世話になっております。情報システム部です。<br><br>お客様のアカウントで不審なアクセスが検出されました。<br>アカウントを保護するため、下記より本人確認をお願いします。<br><br><a href="{{tracking_url}}">▶ セキュリティ確認はこちら</a><br><br>※ 24時間以内にご対応いただけない場合、アカウントが一時停止されます。`,
+      'お荷物のお届けについてご確認ください': `いつもご利用ありがとうございます。<br><br>お荷物のお届け状況についてご確認いただく事項がございます。<br><br><a href="{{tracking_url}}">▶ お荷物の状況を確認する</a><br><br>ご不便をおかけして申し訳ございません。`,
+    };
+
+    function applyTemplate(val) {
+      document.getElementById('subjectInput').value = val;
+      if (templates[val]) document.getElementById('emailBody').value = templates[val];
+    }
+  </script>
+</body>
+</html>
